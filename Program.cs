@@ -1,9 +1,7 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using System;
 using System.Text;
 using UnitOfWorkDemo.Data;
 using UnitOfWorkDemo.Interfaces;
@@ -13,19 +11,45 @@ using UnitOfWorkDemo1.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("WriterConnection")));
-builder.Services.AddDbContext<ReaderDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("ReaderConnection")));
+// Add configuration files
+builder.Configuration
+    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+    .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true)
+    .AddEnvironmentVariables();
 
+// Determine the environment
+var env = builder.Environment;
+
+// Add services to the container based on the environment
+if (env.IsDevelopment())
+{
+    builder.Services.AddDbContext<ApplicationDbContext>(options =>
+        options.UseSqlServer(builder.Configuration.GetConnectionString("WriterConnection")));
+    builder.Services.AddDbContext<ReaderDbContext>(options =>
+        options.UseSqlServer(builder.Configuration.GetConnectionString("ReaderConnection")));
+}
+else if (env.IsStaging())
+{
+    builder.Services.AddDbContext<ApplicationDbContext>(options =>
+        options.UseSqlServer(builder.Configuration.GetConnectionString("WriterConnectionStag")));
+    builder.Services.AddDbContext<ReaderDbContext>(options =>
+        options.UseSqlServer(builder.Configuration.GetConnectionString("ReaderConnectionStag")));
+}
+else
+{
+    // Add production or other environment configurations here
+    builder.Services.AddDbContext<ApplicationDbContext>(options =>
+        options.UseSqlServer(builder.Configuration.GetConnectionString("WriterConnectionProd")));
+    builder.Services.AddDbContext<ReaderDbContext>(options =>
+        options.UseSqlServer(builder.Configuration.GetConnectionString("ReaderConnectionProd")));
+}
+
+// Register other services
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
-
-// Add authentication services
 builder.Services.AddScoped<IAuthService, AuthService>();
 
-// JWT Authentication
+// Add JWT authentication
 var jwtSettings = builder.Configuration.GetSection("Jwt");
 var key = Encoding.ASCII.GetBytes(jwtSettings["Key"]);
 
@@ -36,9 +60,6 @@ builder.Services.AddAuthentication(options =>
 })
 .AddJwtBearer(options =>
 {
-    var jwtSettings = builder.Configuration.GetSection("Jwt");
-    var key = Encoding.ASCII.GetBytes(jwtSettings["Key"]);
-
     options.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuer = true,
@@ -60,13 +81,13 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
+// Add controllers and Swagger configuration
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "Your API", Version = "v1" });
 
-    // Configure Swagger to use JWT bearer tokens
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Description = "JWT Authorization header using the Bearer scheme. Example: \"Bearer {token}\"",
@@ -76,7 +97,6 @@ builder.Services.AddSwaggerGen(c =>
         Scheme = "Bearer"
     });
 
-    // Make sure Swagger UI requires a Bearer token to be specified
     c.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
         {
@@ -95,8 +115,7 @@ builder.Services.AddSwaggerGen(c =>
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+if (env.IsDevelopment() || env.IsStaging())
 {
     app.UseSwagger();
     app.UseSwaggerUI(c =>
@@ -105,7 +124,6 @@ if (app.Environment.IsDevelopment())
     });
 }
 
-// Add HTTPS redirection, routing, authentication, and authorization middleware
 app.UseHttpsRedirection();
 app.UseRouting();
 app.UseAuthentication();
