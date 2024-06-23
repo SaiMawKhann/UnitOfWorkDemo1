@@ -22,9 +22,6 @@ builder.Services.AddDbContext<ReaderDbContext>(options =>
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 
-// Add IDataSynchronizationService registration
-builder.Services.AddScoped<IDataSynchronizationService, DataSynchronizationService>(); // Adjust with your actual implementation
-
 // Add authentication services
 builder.Services.AddScoped<IAuthService, AuthService>();
 
