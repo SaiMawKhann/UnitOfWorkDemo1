@@ -9,44 +9,44 @@ using UnitOfWorkDemo.Interfaces;
 
 namespace UnitOfWorkDemo.Repositories
 {
-    public class Repository<T> : IRepository<T> where T : class
+    public class ReaderRepository<T> : IReaderRepository<T> where T : class
     {
-        private readonly ApplicationDbContext _dbWriterContext;
+        private readonly ReaderDbContext _readerContext;
 
-        public Repository(ApplicationDbContext context)
+        public ReaderRepository(ReaderDbContext readerContext)
         {
-            _dbWriterContext = context;
+            _readerContext = readerContext;
         }
 
         public async Task<IEnumerable<T>> GetAllAsync()
         {
-            return await _dbWriterContext.Set<T>().ToListAsync();
+            return await _readerContext.Set<T>().ToListAsync();
         }
 
         public async Task<T> GetByIdAsync(int id)
         {
-            return await _dbWriterContext.Set<T>().FindAsync(id);
+            return await _readerContext.Set<T>().FindAsync(id);
         }
 
         public async Task AddAsync(T entity)
         {
-            await _dbWriterContext.Set<T>().AddAsync(entity);
+            await _readerContext.Set<T>().AddAsync(entity);
         }
 
         public void Update(T entity)
         {
-            _dbWriterContext.Set<T>().Attach(entity);
-            _dbWriterContext.Entry(entity).State = EntityState.Modified;
+            _readerContext.Set<T>().Attach(entity);
+            _readerContext.Entry(entity).State = EntityState.Modified;
         }
 
         public void Delete(T entity)
         {
-            _dbWriterContext.Set<T>().Remove(entity);
+            _readerContext.Set<T>().Remove(entity);
         }
 
         public IQueryable<T> Query(Expression<Func<T, bool>> predicate)
         {
-            return _dbWriterContext.Set<T>().Where(predicate);
+            return _readerContext.Set<T>().Where(predicate);
         }
     }
 }

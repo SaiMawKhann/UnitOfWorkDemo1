@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System;
@@ -15,12 +16,14 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("WriterConnection")));
-
 builder.Services.AddDbContext<ReaderDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("ReaderConnection")));
 
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+
+// Add IDataSynchronizationService registration
+builder.Services.AddScoped<IDataSynchronizationService, DataSynchronizationService>(); // Adjust with your actual implementation
 
 // Add authentication services
 builder.Services.AddScoped<IAuthService, AuthService>();
@@ -36,6 +39,9 @@ builder.Services.AddAuthentication(options =>
 })
 .AddJwtBearer(options =>
 {
+    var jwtSettings = builder.Configuration.GetSection("Jwt");
+    var key = Encoding.ASCII.GetBytes(jwtSettings["Key"]);
+
     options.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuer = true,

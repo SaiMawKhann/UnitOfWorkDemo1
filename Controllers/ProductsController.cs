@@ -1,35 +1,56 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
+using System;
+using System.Threading.Tasks;
 using UnitOfWorkDemo.Interfaces;
 using UnitOfWorkDemo.Models;
+using UnitOfWorkDemo.Services;
 
-[Authorize]
+//[Authorize]
 [Route("api/[controller]")]
 [ApiController]
 public class ProductsController : ControllerBase
 {
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IDataSynchronizationService _dataSynchronizationService;
 
-    public ProductsController(IUnitOfWork unitOfWork)
+    public ProductsController(IUnitOfWork unitOfWork, IDataSynchronizationService dataSynchronizationService)
     {
         _unitOfWork = unitOfWork;
+        _dataSynchronizationService = dataSynchronizationService;
     }
 
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
-        var products = await _unitOfWork.Products.GetAllAsync();
-        return Ok(products);
+        try
+        {
+            var products = await _unitOfWork.ReaderProducts.GetAllAsync();
+            return Ok(products);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, "Internal server error");
+        }
     }
 
     [HttpPost]
     public async Task<IActionResult> Create(Product product)
     {
-        await _unitOfWork.Products.AddAsync(product);
-        await _unitOfWork.CompleteAsync();
-        return Ok(product);
+        try
+        {
+            await _unitOfWork.Products.AddAsync(product);
+            await _unitOfWork.CompleteAsync();
+
+            await _dataSynchronizationService.SynchronizeProductsAsync();
+
+            return Ok(product);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, "Internal server error");
+        }
     }
 
     [HttpGet("{id}")]
@@ -37,9 +58,10 @@ public class ProductsController : ControllerBase
     {
         try
         {
-            var product = await _unitOfWork.GetRepository<Product>()
-                                            .Query(x => x.Id == id)
+            var product = await _unitOfWork.GetReaderRepository<Product>()
+                                            .Query(p => p.Id == id)
                                             .FirstOrDefaultAsync();
+
             if (product == null)
             {
                 return NotFound();
@@ -48,9 +70,7 @@ public class ProductsController : ControllerBase
         }
         catch (Exception ex)
         {
-            // Log the exception
             return StatusCode(500, "Internal server error");
         }
     }
-
 }

@@ -7,29 +7,44 @@ namespace UnitOfWorkDemo.Repositories
 {
     public class UnitOfWork : IUnitOfWork
     {
-        private readonly ApplicationDbContext _context;
+        private readonly ApplicationDbContext _dbWriterContext;
+        private readonly ReaderDbContext _dbReaderContext;
         private Repository<Product> _productRepository;
+        private ReaderRepository<Product> _readerProductRepository;
 
-        public UnitOfWork(ApplicationDbContext context)
+        public UnitOfWork(ApplicationDbContext writerContext, ReaderDbContext readerContext)
         {
-            _context = context;
+            _dbWriterContext = writerContext;
+            _dbReaderContext = readerContext;
         }
 
-        public IRepository<Product> Products => _productRepository ??= new Repository<Product>(_context);
+        public IRepository<Product> Products => _productRepository ??= new Repository<Product>(_dbWriterContext);
+        public IReaderRepository<Product> ReaderProducts => _readerProductRepository ??= new ReaderRepository<Product>(_dbReaderContext);
 
         public async Task<int> CompleteAsync()
         {
-            return await _context.SaveChangesAsync();
+            return await _dbWriterContext.SaveChangesAsync();
+        }
+
+        public async Task<int> CompleteAsyncForReader()
+        {
+            return await _dbReaderContext.SaveChangesAsync();
         }
 
         public void Dispose()
         {
-            _context.Dispose();
+            _dbWriterContext.Dispose();
+            _dbReaderContext.Dispose();
         }
 
-        public Repository<TEntity> GetRepository<TEntity>() where TEntity : class
+        public IRepository<TEntity> GetRepository<TEntity>() where TEntity : class
         {
-            return new Repository<TEntity>(_context); // Updated method
+            return new Repository<TEntity>(_dbWriterContext);
+        }
+
+        public IReaderRepository<TEntity> GetReaderRepository<TEntity>() where TEntity : class
+        {
+            return new ReaderRepository<TEntity>(_dbReaderContext);
         }
     }
 }
