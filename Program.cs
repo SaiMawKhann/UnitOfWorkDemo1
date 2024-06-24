@@ -9,7 +9,14 @@ using UnitOfWorkDemo.Repositories;
 using UnitOfWorkDemo.Services;
 using UnitOfWorkDemo1.Interfaces;
 
-var builder = WebApplication.CreateBuilder(args);
+var builder = WebApplication.CreateBuilder(new WebApplicationOptions
+{
+    Args = args,
+    EnvironmentName = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production",
+    ApplicationName = "UnitOfWorkDemo1",
+    ContentRootPath = Directory.GetCurrentDirectory(),
+    WebRootPath = "wwwroot"
+});
 
 // Add configuration files
 builder.Configuration
