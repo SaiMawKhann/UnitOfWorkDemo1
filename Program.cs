@@ -12,7 +12,7 @@ using UnitOfWorkDemo1.Interfaces;
 var builder = WebApplication.CreateBuilder(new WebApplicationOptions
 {
     Args = args,
-    EnvironmentName = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production",
+    EnvironmentName = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Development",
     ApplicationName = "UnitOfWorkDemo1",
     ContentRootPath = Directory.GetCurrentDirectory(),
     WebRootPath = "wwwroot"
