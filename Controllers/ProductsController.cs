@@ -2,7 +2,11 @@
 using System;
 using System.Threading.Tasks;
 using UnitOfWorkDemo.Interfaces;
-using UnitOfWorkDemo.Models;
+using kzy_entities.Entities;
+using UnitOfWorkDemo1.BL;
+using UnitOfWorkDemo.Repositories;
+using kzy_entities.Models.Request.Product;
+using kzy_entities.DBContext;
 
 namespace UnitOfWorkDemo.Controllers
 {
@@ -10,11 +14,13 @@ namespace UnitOfWorkDemo.Controllers
     [ApiController]
     public class ProductsController : ControllerBase
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IUnitOfWork<ApplicationDbContext, ReaderDbContext> _unitOfWork;
+        private readonly IProductBL productBL;
 
-        public ProductsController(IUnitOfWork unitOfWork)
+        public ProductsController(IUnitOfWork<ApplicationDbContext, ReaderDbContext> unitOfWork, IProductBL productBL)
         {
             _unitOfWork = unitOfWork;
+            this.productBL = productBL;
         }
 
         [HttpGet]
@@ -22,7 +28,7 @@ namespace UnitOfWorkDemo.Controllers
         {
             try
             {
-                var products = await _unitOfWork.Products.GetAllAsync(true);
+                var products = await _unitOfWork.GetRepository<Product>().GetAllAsync(true);
                 return Ok(products);
             }
             catch (Exception ex)
@@ -32,18 +38,9 @@ namespace UnitOfWorkDemo.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create(Product product)
+        public async Task<IActionResult> Create(CreateProductRequestModel createProductRequestModel)
         {
-            try
-            {
-                await _unitOfWork.Products.AddAsync(product);
-                await _unitOfWork.CompleteAsync();
-                return Ok(product);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, "Internal server error");
-            }
+            return Ok(productBL.CreateProduct(createProductRequestModel));
         }
 
         [HttpGet("{id}")]
@@ -51,7 +48,7 @@ namespace UnitOfWorkDemo.Controllers
         {
             try
             {
-                var product = await _unitOfWork.Products.GetByIdAsync(id, reader: true);
+                var product = await _unitOfWork.GetRepository<Product>().GetByIdAsync(id, reader: true);
 
                 if (product == null)
                 {

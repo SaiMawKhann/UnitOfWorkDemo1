@@ -1,4 +1,5 @@
-﻿using UnitOfWorkDemo1.Models;
+﻿using kzy_entities.Entities;
+
 namespace UnitOfWorkDemo1.Interfaces
 {
     public interface IAuthService

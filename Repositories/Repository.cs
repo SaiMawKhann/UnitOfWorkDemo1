@@ -1,10 +1,11 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using kzy_entities.DBContext;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
-using UnitOfWorkDemo.Data;
+using kzy_entities.Entities;
 using UnitOfWorkDemo.Interfaces;
 
 namespace UnitOfWorkDemo.Repositories
@@ -45,7 +46,6 @@ namespace UnitOfWorkDemo.Repositories
         public async Task AddAsync(T entity)
         {
             await _dbWriterSet.AddAsync(entity);
-            await _dbReaderSet.AddAsync(entity);
         }
 
         public void Update(T entity)

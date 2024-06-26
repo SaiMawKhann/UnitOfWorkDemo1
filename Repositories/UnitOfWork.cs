@@ -1,16 +1,25 @@
-﻿using System;
+﻿using kzy_entities.DBContext;
+using Microsoft.EntityFrameworkCore;
+using System;
 using System.Threading.Tasks;
-using UnitOfWorkDemo.Data;
 using UnitOfWorkDemo.Interfaces;
-using UnitOfWorkDemo.Models;
 
 namespace UnitOfWorkDemo.Repositories
 {
-    public class UnitOfWork : IUnitOfWork
+    public interface IUnitOfWork : IDisposable
+    {
+        Task<int> GGWPChangesAsync();
+        IRepository<TEntity> GetRepository<TEntity>() where TEntity : class;
+    }
+
+    public interface IUnitOfWork<T, U> : IUnitOfWork where T : DbContext where U : DbContext
+    {
+    }
+
+    public class UnitOfWork<T, U> : IUnitOfWork<T, U> where T : DbContext where U : DbContext
     {
         private readonly ApplicationDbContext _dbWriterContext;
         private readonly ReaderDbContext _dbReaderContext;
-        private IRepository<Product> _productRepository;
 
         public UnitOfWork(ApplicationDbContext writerContext, ReaderDbContext readerContext)
         {
@@ -18,19 +27,17 @@ namespace UnitOfWorkDemo.Repositories
             _dbReaderContext = readerContext;
         }
 
-        public IRepository<Product> Products => _productRepository ??= new Repository<Product>(_dbWriterContext, _dbReaderContext);
-
-        public async Task<int> CompleteAsync()
+        public async Task<int> GGWPChangesAsync()
         {
             var writerResult = await _dbWriterContext.SaveChangesAsync();
-            var readerResult = await _dbReaderContext.SaveChangesAsync();
-            return writerResult + readerResult;
+            return writerResult;
         }
 
         public void Dispose()
         {
             _dbWriterContext.Dispose();
             _dbReaderContext.Dispose();
+
         }
 
         public IRepository<TEntity> GetRepository<TEntity>() where TEntity : class

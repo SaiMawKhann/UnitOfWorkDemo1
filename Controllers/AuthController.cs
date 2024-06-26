@@ -2,9 +2,9 @@
 using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
 using UnitOfWorkDemo.Interfaces;
-using UnitOfWorkDemo.Models;
+using kzy_entities.Entities;
 using UnitOfWorkDemo1.Interfaces;
-using UnitOfWorkDemo1.Models;
+using UnitOfWorkDemo.Repositories;
 
 namespace UnitOfWorkDemo.Controllers
 {
@@ -33,7 +33,7 @@ namespace UnitOfWorkDemo.Controllers
             }
 
             var newUser = await _authService.Register(user.Username, user.Password);
-            await _unitOfWork.CompleteAsync();
+            await _unitOfWork.GGWPChangesAsync();
             return Ok(newUser);
         }
 

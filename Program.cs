@@ -1,22 +1,16 @@
+using kzy_entities.DBContext;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
-using UnitOfWorkDemo.Data;
 using UnitOfWorkDemo.Interfaces;
 using UnitOfWorkDemo.Repositories;
-using UnitOfWorkDemo.Services;
+using UnitOfWorkDemo1.BL;
 using UnitOfWorkDemo1.Interfaces;
+using kzy_entities.Common;
 
-var builder = WebApplication.CreateBuilder(new WebApplicationOptions
-{
-    Args = args,
-    EnvironmentName = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Development",
-    ApplicationName = "UnitOfWorkDemo1",
-    ContentRootPath = Directory.GetCurrentDirectory(),
-    WebRootPath = "wwwroot"
-});
+var builder = WebApplication.CreateBuilder(args);
 
 // Add configuration files
 builder.Configuration
@@ -52,9 +46,10 @@ else
 }
 
 // Register other services
-builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddScoped<IUnitOfWork<ApplicationDbContext, ReaderDbContext>, UnitOfWork<ApplicationDbContext, ReaderDbContext>>();
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
-builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddTransient<IProductBL, ProductBL>();
+builder.Services.AddTransient<IErrorCodeProvider, ErrorCodeProvider>();  // Register IErrorCodeProvider
 
 // Add JWT authentication
 var jwtSettings = builder.Configuration.GetSection("Jwt");

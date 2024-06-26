@@ -1,0 +1,14 @@
+﻿{
+  "E0": {
+    "code": 0,
+    "message": "Success."
+  },
+  "E404": {
+    "code": 404,
+    "message": "There is no data."
+  },
+  "E500": {
+    "code": 500,
+    "message": "An error has occured. Please try again."
+  }
+}
