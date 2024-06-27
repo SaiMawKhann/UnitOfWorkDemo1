@@ -5,6 +5,11 @@ using kzy_entities.Entities;
 using kzy_entities.Models.Request.Product;
 using UnitOfWorkDemo.Repositories;
 using System.Threading.Tasks;
+using System;
+using System.Threading;
+using kzy_entities.Models.Response.Product;
+using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 
 namespace UnitOfWorkDemo1.BL
 {
@@ -12,39 +17,44 @@ namespace UnitOfWorkDemo1.BL
     public interface IProductBL
     {
         Task<ResponseModel<string>> CreateProduct(CreateProductRequestModel createRequestModel);
+        Task<ResponseModel<List<ProductListResponseModel>> >GetProductList();
+
     }
     #endregion
 
-    public class ProductBL : BaseBL, IProductBL
+    public class ProductBL :  IProductBL
     {
+        private readonly IUnitOfWork<ApplicationDbContext, ReaderDbContext> _unitOfWork;
+        private readonly IErrorCodeProvider _errorCodeProvider;
+        protected readonly IMapper mapper;
+
+
         public ProductBL
             (IUnitOfWork<ApplicationDbContext, ReaderDbContext> unitOfWork,
             IErrorCodeProvider errorCodeProvider)
-            : base(unitOfWork, errorCodeProvider)
         {
+            _unitOfWork = unitOfWork;
+            _errorCodeProvider = errorCodeProvider;
         }
+        public async Task<ResponseModel<List<ProductListResponseModel>>> GetProductList()
+        {
+            try
+            {
+                var products =  _unitOfWork.GetRepository<Product>().Query(x=> x.Price > 0,true)
+                    .OrderByDescending(x => x.CreatedOn)
+                    .FirstOrDefault();
 
-        //public ResponseModel<string> CreateProduct(CreateProductRequestModel model)
-        //{
-        //    try
-        //    {
-        //        Product product = new Product
-        //        {
-        //            Id = model.Id,
-        //            Name = model.Name,
-        //            Price = model.Price
-        //        };
+                var data = mapper.Map<ProductListResponseModel>(products);
 
-        //         unitOfWork.GetRepository<Product>().AddAsync(product);
-        //         unitOfWork.GGWPChangesAsync();
-        //    }
-        //    catch (Exception)
-        //    {
-        //        return errorCodeProvider.GetResponseModel<string>(ErrorCode.E404);
-        //    }
-        //    return errorCodeProvider.GetResponseModel<string>(ErrorCode.E0);
 
-        //}
+                return _errorCodeProvider.GetResponseModel<List<ProductListResponseModel>>(ErrorCode.E0);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+                return _errorCodeProvider.GetResponseModel<List<ProductListResponseModel>>(ErrorCode.E500);
+            }
+        }
 
         public async Task<ResponseModel<string>> CreateProduct(CreateProductRequestModel model)
         {
@@ -52,35 +62,21 @@ namespace UnitOfWorkDemo1.BL
             {
                 Product product = new Product
                 {
-                    Id = model.Id,
+                    Id = new Guid(),
                     Name = model.Name,
-                    Price = model.Price
+                    Price = model.Price,
+                    CreatedBy = null,
+                    CreatedOn = DateTime.UtcNow,
                 };
 
-                // Add product to repository asynchronously
-                await unitOfWork.GetRepository<Product>().AddAsync(product);
-
-                // Save changes to the database asynchronously
-                int result = await unitOfWork.GGWPChangesAsync();
-
-                if (result > 0)
-                {
-                    // Product successfully created
-                    return errorCodeProvider.GetResponseModel<string>(ErrorCode.E0);
-                }
-                else
-                {
-                    // Handle scenario where no changes were made (optional)
-                    return errorCodeProvider.GetResponseModel<string>(ErrorCode.E404);
-                }
+                _unitOfWork.GetRepository<Product>().Add(product);
+                await _unitOfWork.SaveChangesAsync();
+                return _errorCodeProvider.GetResponseModel<string>(ErrorCode.E0);
             }
             catch (Exception ex)
             {
-                // Log the exception (recommended)
-                // logger.LogError(ex, "Error creating product");
-
-                // Return an error response
-                return errorCodeProvider.GetResponseModel<string>(ErrorCode.E404);
+                Console.WriteLine(ex.ToString());
+                return _errorCodeProvider.GetResponseModel<string>(ErrorCode.E500);
             }
         }
 

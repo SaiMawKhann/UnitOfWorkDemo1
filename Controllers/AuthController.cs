@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
-using UnitOfWorkDemo.Interfaces;
 using kzy_entities.Entities;
 using UnitOfWorkDemo1.Interfaces;
 using UnitOfWorkDemo.Repositories;
@@ -33,7 +32,7 @@ namespace UnitOfWorkDemo.Controllers
             }
 
             var newUser = await _authService.Register(user.Username, user.Password);
-            await _unitOfWork.GGWPChangesAsync();
+            await _unitOfWork.SaveChangesAsync();
             return Ok(newUser);
         }
 

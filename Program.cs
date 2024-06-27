@@ -4,7 +4,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
-using UnitOfWorkDemo.Interfaces;
 using UnitOfWorkDemo.Repositories;
 using UnitOfWorkDemo1.BL;
 using UnitOfWorkDemo1.Interfaces;
@@ -48,8 +47,10 @@ else
 // Register other services
 builder.Services.AddScoped<IUnitOfWork<ApplicationDbContext, ReaderDbContext>, UnitOfWork<ApplicationDbContext, ReaderDbContext>>();
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
-builder.Services.AddTransient<IProductBL, ProductBL>();
-builder.Services.AddTransient<IErrorCodeProvider, ErrorCodeProvider>();  // Register IErrorCodeProvider
+builder.Services.AddScoped<IProductBL, ProductBL>();
+builder.Services.AddScoped<IErrorCodeProvider, ErrorCodeProvider>();  // Register IErrorCodeProvider
+builder.Services.AddAutoMapper(typeof(Program).Assembly);
+
 
 // Add JWT authentication
 var jwtSettings = builder.Configuration.GetSection("Jwt");

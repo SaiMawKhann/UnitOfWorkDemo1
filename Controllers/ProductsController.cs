@@ -1,12 +1,14 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Threading.Tasks;
-using UnitOfWorkDemo.Interfaces;
 using kzy_entities.Entities;
 using UnitOfWorkDemo1.BL;
 using UnitOfWorkDemo.Repositories;
 using kzy_entities.Models.Request.Product;
 using kzy_entities.DBContext;
+using Swashbuckle.Swagger.Annotations;
+using kzy_entities.Common;
+using kzy_entities.Models.Response.Product;
 
 namespace UnitOfWorkDemo.Controllers
 {
@@ -23,24 +25,18 @@ namespace UnitOfWorkDemo.Controllers
             this.productBL = productBL;
         }
 
-        [HttpGet]
-        public async Task<IActionResult> GetAll()
+        [HttpGet("products")]
+        [SwaggerOperation("Get Product List")]
+        [SwaggerResponse(statusCode: 200, type: typeof(ResponseModel<List<ProductListResponseModel>>))]
+        public async Task<IActionResult> GetProductList()
         {
-            try
-            {
-                var products = await _unitOfWork.GetRepository<Product>().GetAllAsync(true);
-                return Ok(products);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, "Internal server error");
-            }
+            return Ok(await productBL.GetProductList());
         }
 
         [HttpPost]
         public async Task<IActionResult> Create(CreateProductRequestModel createProductRequestModel)
         {
-            return Ok(productBL.CreateProduct(createProductRequestModel));
+            return Ok(await productBL.CreateProduct(createProductRequestModel));
         }
 
         [HttpGet("{id}")]
@@ -48,7 +44,7 @@ namespace UnitOfWorkDemo.Controllers
         {
             try
             {
-                var product = await _unitOfWork.GetRepository<Product>().GetByIdAsync(id, reader: true);
+                var product = await _unitOfWork.GetRepository<Product>().GetAsync(id, reader: true);
 
                 if (product == null)
                 {
