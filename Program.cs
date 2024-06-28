@@ -8,6 +8,7 @@ using UnitOfWorkDemo.Repositories;
 using UnitOfWorkDemo1.BL;
 using UnitOfWorkDemo1.Interfaces;
 using kzy_entities.Common;
+using UnitOfWorkDemo1.MapperProfiles;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -49,7 +50,8 @@ builder.Services.AddScoped<IUnitOfWork<ApplicationDbContext, ReaderDbContext>, U
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 builder.Services.AddScoped<IProductBL, ProductBL>();
 builder.Services.AddScoped<IErrorCodeProvider, ErrorCodeProvider>();  // Register IErrorCodeProvider
-builder.Services.AddAutoMapper(typeof(Program).Assembly);
+builder.Services.AddAutoMapper(typeof(AutoMapperProfile).Assembly);
+
 
 
 // Add JWT authentication

@@ -10,13 +10,13 @@ namespace UnitOfWorkDemo.Services
 {
     public class AuthService
     {
-        private readonly IConfiguration _configuration;
+        //private readonly IConfiguration _configuration;
 
-        public AuthService(IConfiguration configuration)
-        {
-            //_unitOfWork = unitOfWork;
-            _configuration = configuration;
-        }
+        //public AuthService(IConfiguration configuration)
+        //{
+        //    //_unitOfWork = unitOfWork;
+        //    _configuration = configuration;
+        //}
 
         //public async Task<string> Authenticate(string username, string password)
         //{

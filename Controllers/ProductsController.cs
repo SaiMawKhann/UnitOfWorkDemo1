@@ -16,46 +16,49 @@ namespace UnitOfWorkDemo.Controllers
     [ApiController]
     public class ProductsController : ControllerBase
     {
-        private readonly IUnitOfWork<ApplicationDbContext, ReaderDbContext> _unitOfWork;
         private readonly IProductBL productBL;
 
-        public ProductsController(IUnitOfWork<ApplicationDbContext, ReaderDbContext> unitOfWork, IProductBL productBL)
+        public ProductsController(IProductBL productBL)
         {
-            _unitOfWork = unitOfWork;
             this.productBL = productBL;
         }
 
-        [HttpGet("products")]
+        [HttpGet("Products")]
         [SwaggerOperation("Get Product List")]
         [SwaggerResponse(statusCode: 200, type: typeof(ResponseModel<List<ProductListResponseModel>>))]
         public async Task<IActionResult> GetProductList()
         {
             return Ok(await productBL.GetProductList());
         }
+        [HttpGet("Product Details")]
+        [SwaggerOperation("Get Product Details")]
+        [SwaggerResponse(statusCode: 200, type: typeof(ResponseModel<List<ProductListResponseModel>>))]
+        public async Task<IActionResult> GetProductDetails([FromRoute]Guid id)
+        {
+            return Ok(await productBL.GetProductDetails(id));
+        }
 
         [HttpPost]
-        public async Task<IActionResult> Create(CreateProductRequestModel createProductRequestModel)
+        [SwaggerOperation("Create Product")]
+        [SwaggerResponse(statusCode: 200, type: typeof(ResponseModel<string>))]
+        public async Task<IActionResult> Create([FromBody]CreateProductRequestModel createProductRequestModel)
         {
             return Ok(await productBL.CreateProduct(createProductRequestModel));
         }
 
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetProductById(int id)
+        [HttpPatch]
+        [SwaggerOperation("Get Product By Id")]
+        public async Task<IActionResult> UpdateProductById([FromRoute]Guid id, [FromBody] UpdateProductRequestModel updateProductRequestModel)
         {
-            try
-            {
-                var product = await _unitOfWork.GetRepository<Product>().GetAsync(id, reader: true);
+            return Ok(await productBL.UpdateProductById(id, updateProductRequestModel));
+         }
 
-                if (product == null)
-                {
-                    return NotFound();
-                }
-                return Ok(product);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, "Internal server error");
-            }
+        [HttpDelete]
+        [SwaggerOperation("Delete Product")]
+        [SwaggerResponse(statusCode: 200, type: typeof(ResponseModel<string>))]
+        public async Task<IActionResult> Delete([FromBody] Guid id)
+        {
+             return Ok(await productBL.DeleteProduct(id));
         }
     }
 }

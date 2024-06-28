@@ -69,6 +69,8 @@ namespace UnitOfWorkDemo.Repositories
 
         void Delete(T entity);
         void Delete(IEnumerable<T> entities);
+        Task DeleteAsync(T entity);
+        Task DeleteAsync(IEnumerable<T> entities);
 
         int BulkDelete(Expression<Func<T, bool>> expression);
         Task<int> BulkDeleteAsync(
@@ -272,6 +274,18 @@ namespace UnitOfWorkDemo.Repositories
         public void Delete(IEnumerable<T> entities)
         {
             _dbWriterSet.RemoveRange(entities);
+        }
+
+        public async Task DeleteAsync(T entity)
+        {
+            _dbWriterSet.Remove(entity);
+            await _dbWriterContext.SaveChangesAsync();
+        }
+
+        public async Task DeleteAsync(IEnumerable<T> entities)
+        {
+            _dbWriterSet.RemoveRange(entities);
+            await _dbWriterContext.SaveChangesAsync();
         }
 
         public void Save()
