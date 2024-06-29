@@ -1,6 +1,8 @@
 ﻿using AutoMapper;
 using kzy_entities.Entities;
+using kzy_entities.Models.Response.Onboarding;
 using kzy_entities.Models.Response.Product;
+using System.Runtime.ConstrainedExecution;
 
 namespace UnitOfWorkDemo1.MapperProfiles
 {
@@ -12,6 +14,8 @@ namespace UnitOfWorkDemo1.MapperProfiles
                 .ForMember(dest => dest.ProductId, opt => opt.MapFrom(src => src.Id))
                 .ForMember(dest => dest.ProductName, opt => opt.MapFrom(src => src.Name))
                 .ForMember(dest => dest.CreatedDate, opt => opt.MapFrom(src => src.CreatedOn));
+
+            CreateMap<Customer, ProfileResponseModel>();
 
         }
     }

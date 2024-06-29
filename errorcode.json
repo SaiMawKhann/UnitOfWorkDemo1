@@ -10,5 +10,29 @@
   "E500": {
     "code": 500,
     "message": "An error has occured. Please try again."
+  },
+  "E100": {
+    "code": 100,
+    "message": "Invalid email address."
+  },
+  "E101": {
+    "code": 101,
+    "message": "Email address exist."
+  },
+  "E124": {
+    "code": 124,
+    "message": "Mobile number already belongs to another account."
+  },
+  "E113": {
+    "code": 113,
+    "message": "Password must be at least 8 characters with consisting of alphanumeric with a mixture of upper and lower case."
+  },
+  "E119": {
+    "code": 119,
+    "message": "User doesn't exist."
+  },
+  "E1402": {
+    "code": 1402,
+    "message": "Please set a password."
   }
 }

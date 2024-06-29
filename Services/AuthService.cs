@@ -58,12 +58,12 @@ namespace UnitOfWorkDemo.Services
         //    return user;
         //}
 
-        //private string HashPassword(string password)
-        //{
-        //    // Implement your password hashing logic here
-        //    // For example, you can use BCrypt, SHA256, etc.
-        //    // Here, just return the password as a placeholder
-        //    return password; // Replace with actual hashing logic
-        //}
+        private string HashPassword(string password)
+        {
+            // Implement your password hashing logic here
+            // For example, you can use BCrypt, SHA256, etc.
+            // Here, just return the password as a placeholder
+            return password; // Replace with actual hashing logic
+        }
     }
 }
