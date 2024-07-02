@@ -25,7 +25,6 @@ namespace UnitOfWorkDemo1.BL
 {
     public interface IOnboardingBL 
     {
-        //Task<ResponseModel<string>> LogIn(LogInRequestModel createRequestModel);
         Task<ResponseModel<SuccessLoginResponseModel>> Register(SignupRequestModel model);
         ResponseModel<SuccessLoginResponseModel> Login(LogInRequestModel model);
 
@@ -139,14 +138,14 @@ namespace UnitOfWorkDemo1.BL
                 LastName = model.LastName,
                 DOB = model.Dob,
                 Email = email,
-                Status = Status.Active,
+                Status = "Active",
                 Type = model.Type,
                 Hash = hashResult.Hash,
                 Salt = hashResult.Salt,
                 MobileCode = mobileCode,
                 Mobile = mobile,
                 ProfileImageUrl = model.ProfileImageUrl,
-                CreatedOn = DateTime.UtcNow
+                CreatedOn = DateTime.UtcNow,
             };
 
             unitOfWork.GetRepository<Customer>().Add(customer);

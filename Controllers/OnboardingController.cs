@@ -16,8 +16,9 @@ using UnitOfWorkDemo1.BL;
 
 namespace UnitOfWorkDemo1.Controllers
 {
-    [Route("api/[controller]")]
     [ApiController]
+    [ApiVersion("1")]
+    [Route("v{version:apiVersion}/[controller]")]
     public class OnboardingController : Controller
     {
         private readonly IOnboardingBL onboardingBL;
@@ -27,8 +28,8 @@ namespace UnitOfWorkDemo1.Controllers
             this.onboardingBL = onboardingBL;
 
         }
-        [HttpPost]
-        [SwaggerOperation("Create Customer")]
+        [HttpPost("register")]
+        [SwaggerOperation("Create Product")]
         [SwaggerResponse(statusCode: 200, type: typeof(ResponseModel<string>))]
         public async Task<IActionResult> Register([FromBody] SignupRequestModel signUpRequestModel)
         {

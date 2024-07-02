@@ -17,6 +17,12 @@ namespace UnitOfWorkDemo1.MapperProfiles
 
             CreateMap<Customer, ProfileResponseModel>();
 
+            CreateMap<Product, ProductDetailResponseModel>()
+                 .ForMember(dest => dest.ProductId, opt => opt.MapFrom(src => src.Id))
+                .ForMember(dest => dest.ProductName, opt => opt.MapFrom(src => src.Name))
+                 .ForMember(dest => dest.Price, opt => opt.MapFrom(src => src.Price))
+                .ForMember(dest => dest.CreatedDate, opt => opt.MapFrom(src => src.CreatedOn)); 
+
         }
     }
 }

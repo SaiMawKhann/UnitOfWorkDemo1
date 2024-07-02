@@ -6,14 +6,17 @@ using Microsoft.OpenApi.Models;
 using System.Text;
 using UnitOfWorkDemo.Repositories;
 using UnitOfWorkDemo1.BL;
-using UnitOfWorkDemo1.Interfaces;
 using kzy_entities.Common;
 using UnitOfWorkDemo1.MapperProfiles;
 using UnitOfWorkDemo1.Services;
 using kzy_entities.Enums;
 using System.IdentityModel.Tokens.Jwt;
+using Azure.Core;
+using System.Security.Cryptography;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddHealthChecks();
 
 // Add configuration files
 builder.Configuration
@@ -23,6 +26,9 @@ builder.Configuration
 
 // Determine the environment
 var env = builder.Environment;
+
+//Add Versioning
+builder.Services.AddApiVersioning();
 
 // Add services to the container based on the environment
 if (env.IsDevelopment())
@@ -59,6 +65,8 @@ builder.Services.AddAutoMapper(typeof(AutoMapperProfile).Assembly);
 
 #region JWT Token & External Authentications
 var jwtSettings = builder.Configuration.GetSection("Jwt");
+var aa = jwtSettings["Keys:OTPToken"];
+
 JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
   .AddCookie(ConstantStrings.COOKIE_AUTHENTICATION, (options) =>
@@ -95,15 +103,15 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
   })
   .AddJwtBearer(ConstantStrings.OTPTOKENAUTH, options =>
   {
-      var oTPTokenKey = jwtSettings["Jwt:Keys:OTPToken"];
+      var oTPTokenKey = jwtSettings["Keys:OTPToken"]; 
       options.TokenValidationParameters = new TokenValidationParameters
       {
           ValidateLifetime = true,
           ValidateIssuerSigningKey = true,
-          ValidIssuer = jwtSettings["Jwt:Issuer"],
-          ValidAudience = jwtSettings["Jwt:Audience"],
-          ValidateIssuer = Boolean.Parse(jwtSettings["Jwt:ValidateIssuer"]),
-          ValidateAudience = Boolean.Parse(jwtSettings["Jwt:ValidateAudience"]),
+          ValidIssuer = jwtSettings["Issuer"],
+          ValidAudience = jwtSettings["Audience"],
+          ValidateIssuer = Boolean.Parse(jwtSettings["ValidateIssuer"]),
+          ValidateAudience = Boolean.Parse(jwtSettings["ValidateAudience"]),
           IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(oTPTokenKey)),
           ClockSkew = TimeSpan.Zero
       };
@@ -122,15 +130,15 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
   })
   .AddJwtBearer(ConstantStrings.ACCESSTOKENAUTH, options =>
   {
-      var accessTokenKey = jwtSettings["Jwt:Keys:AccessToken"];
+      var accessTokenKey = jwtSettings["Keys:AccessToken"];
       options.TokenValidationParameters = new TokenValidationParameters
       {
           ValidateLifetime = true,
           ValidateIssuerSigningKey = true,
-          ValidIssuer = jwtSettings["Jwt:Issuer"],
-          ValidAudience = jwtSettings["Jwt:Audience"],
-          ValidateIssuer = Boolean.Parse(jwtSettings["Jwt:ValidateIssuer"]),
-          ValidateAudience = Boolean.Parse(jwtSettings["Jwt:ValidateAudience"]),
+          ValidIssuer = jwtSettings["Issuer"],
+          ValidAudience = jwtSettings["Audience"],
+          ValidateIssuer = Boolean.Parse(jwtSettings["ValidateIssuer"]),
+          ValidateAudience = Boolean.Parse(jwtSettings["ValidateAudience"]),
           IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(accessTokenKey)),
           ClockSkew = TimeSpan.Zero
       };
@@ -168,15 +176,15 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
   })
   .AddJwtBearer(ConstantStrings.REFRESHTOKENAUTH, options =>
   {
-      var refreshTokenKey = jwtSettings["Jwt:Keys:RefreshToken"];
+      var refreshTokenKey = jwtSettings["Keys:RefreshToken"];
       options.TokenValidationParameters = new TokenValidationParameters
       {
           ValidateLifetime = true,
           ValidateIssuerSigningKey = true,
-          ValidIssuer = jwtSettings["Jwt:Issuer"],
-          ValidAudience = jwtSettings["Jwt:Audience"],
-          ValidateIssuer = Boolean.Parse(jwtSettings["Jwt:ValidateIssuer"]),
-          ValidateAudience = Boolean.Parse(jwtSettings["Jwt:ValidateAudience"]),
+          ValidIssuer = jwtSettings["Issuer"],
+          ValidAudience = jwtSettings["Audience"],
+          ValidateIssuer = Boolean.Parse(jwtSettings["ValidateIssuer"]),
+          ValidateAudience = Boolean.Parse(jwtSettings["ValidateAudience"]),
           IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(refreshTokenKey)),
           ClockSkew = TimeSpan.Zero
       };
@@ -195,15 +203,15 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
   })
   .AddJwtBearer("BIOMETRICTOKENAUTH", options =>
   {
-      var accessTokenKey = jwtSettings["Jwt:Keys:BiometricToken"];
+      var accessTokenKey = jwtSettings["Keys:BiometricToken"];
       options.TokenValidationParameters = new TokenValidationParameters
       {
           ValidateLifetime = true,
           ValidateIssuerSigningKey = true,
-          ValidIssuer = jwtSettings["Jwt:Issuer"],
-          ValidAudience = jwtSettings["Jwt:Audience"],
-          ValidateIssuer = Boolean.Parse(jwtSettings["Jwt:ValidateIssuer"]),
-          ValidateAudience = Boolean.Parse(jwtSettings["Jwt:ValidateAudience"]),
+          ValidIssuer = jwtSettings["Issuer"],
+          ValidAudience = jwtSettings["Audience"],
+          ValidateIssuer = Boolean.Parse(jwtSettings["ValidateIssuer"]),
+          ValidateAudience = Boolean.Parse(jwtSettings["ValidateAudience"]),
           IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(accessTokenKey)),
           ClockSkew = TimeSpan.Zero
       };
@@ -266,7 +274,9 @@ if (env.IsDevelopment() || env.IsStaging())
     });
 }
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
+
+app.UseHealthChecks("/");
 app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
@@ -276,4 +286,8 @@ app.UseEndpoints(endpoints =>
     endpoints.MapControllers();
 });
 
+Console.WriteLine("About to run");
+
 app.Run();
+
+

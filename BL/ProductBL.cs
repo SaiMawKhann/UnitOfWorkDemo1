@@ -109,7 +109,7 @@ namespace UnitOfWorkDemo1.BL
         {
                 try
                 {
-                    var product = await _unitOfWork.GetRepository<Product>().Query(x=> x.Id == model.Id).FirstOrDefaultAsync();
+                    var product = await _unitOfWork.GetRepository<Product>().Query(x=> x.Id == id).FirstOrDefaultAsync();
 
                     if (product == null)
                     {
